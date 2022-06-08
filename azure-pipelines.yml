@@ -1,4 +1,4 @@
-# Docker
++# Docker
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
@@ -35,16 +35,6 @@ stages:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
+        containerRegistry: $(containerRegistry)
         tags: |
           $(tag)
-    - task: DockerCompose@0
-      displayName: Run services
-      inputs:
-        action: Run services
-        azureSubscriptionEndpoint: azure-resource-manager
-        azureContainerRegistry: $(ContainerRegistry)
-        dockerComposeFile: $(dockercomposefilepath)
-        qualifyImageNames: true
-        abortOnContainerExit: true
-        detached: false
