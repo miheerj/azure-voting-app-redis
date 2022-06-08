@@ -1,0 +1,50 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '90fb36ed-aa82-47e3-b5af-06d8d39cd722'
+  imageRepository: 'azurevotefront'
+  containerRegistry: 'miheerazurecon.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/azure-vote/Dockerfile-for-app-service'
+  dockercomposefilepath: '$(Build.SourcesDirectory)/docker-compose.yml'
+  tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+    - task: DockerCompose@0
+      displayName: Run services
+      inputs:
+        action: Run services
+        azureSubscriptionEndpoint: azure-resource-manager
+        azureContainerRegistry: $(ContainerRegistry)
+        dockerComposeFile: $(dockercomposefilepath)
+        qualifyImageNames: true
+        abortOnContainerExit: true
+        detached: false
